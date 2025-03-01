@@ -18,39 +18,56 @@
         </a>
         <ul class="space-y-2 font-medium">
             <li>
-                <a href="/admin/users"
+                <a href="/admin"
+                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                    <span class="material-symbols-outlined">
+                        dashboard
+                    </span>
+                    <span class="flex-1 ml-3 whitespace-nowrap">Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/clients"
                     class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                     <span class="material-symbols-outlined">
                         group
                     </span>
-                    <span class="flex-1 ml-3 whitespace-nowrap">Users Registration</span>
+                    <span class="flex-1 ml-3 whitespace-nowrap">Clients</span>
                 </a>
             </li>
             <li>
-                <a href="/admin/trips"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <button type="button"
+                    class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+                    aria-controls="dropdown-example" data-collapse-toggle="dropdown-example">
                     <span class="material-symbols-outlined">
-                        show_chart
+                        local_gas_station
                     </span>
-                    <span class="flex-1 ml-3 whitespace-nowrap">Trips</span>
-                </a>
+                    <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Fuel</span>
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 4 4 4-4" />
+                    </svg>
+                </button>
+                <ul id="dropdown-example" class="hidden py-2 space-y-2">
+                    <li>
+                        <a href="/admin/fuel-fillings/price"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Price</a>
+                    </li>
+                    <li>
+                        <a href="/admin/fuel-fillings"
+                            class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Fuel
+                            Fillings</a>
+                    </li>
+                </ul>
             </li>
             <li>
-                <a href="/admin/buses"
-                    class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                    <span class="material-symbols-outlined">
-                        directions_bus
-                    </span>
-                    <span class="flex-1 ml-3 whitespace-nowrap">Buses</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/payments"
+                <a href="/admin/transactions"
                     class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                     <span class="material-symbols-outlined">
                         payments
                     </span>
-                    <span class="flex-1 ml-3 whitespace-nowrap">Payments</span>
+                    <span class="flex-1 ml-3 whitespace-nowrap">Transactions</span>
                 </a>
             </li>
         </ul>
