@@ -18,14 +18,6 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -50,22 +42,6 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request)
@@ -87,30 +63,5 @@ class UserController extends Controller
         } else {
             return redirect()->back()->withErrors('Passwords not match');
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-    public function updateSingleUser(Request $request)
-    {
-        $request->validate([
-            "userId" => "required|integer",
-            "name" => "required|string",
-            "email" => "required|email|string",
-            "card" => "required|string"
-        ]);
-
-        $user = User::find($request->userId);
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->card = $request->card;
-        $user->update();
-        return redirect('/admin/users');
     }
 }

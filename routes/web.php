@@ -21,9 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::view('/', 'auth.login')->name('login');
-Route::view('/register', 'auth.register');
 ROute::post('/', [AuthController::class, 'login']);
-ROute::post('/register', [UserController::class, 'store']);
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
 Route::group(["prefix" => "admin", "middleware" => ["auth", "adminCheck"], "as" => "admin."], function () {
