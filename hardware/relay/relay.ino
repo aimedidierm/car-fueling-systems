@@ -1,5 +1,5 @@
 // Define the GPIO pin for the relay control
-#define RELAY_PIN 35  // Change this to your chosen GPIO pin
+#define RELAY_PIN 12  // Change this to your chosen GPIO pin
 
 void setup() {
   // Initialize the relay control pin as output
