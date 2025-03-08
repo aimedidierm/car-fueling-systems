@@ -9,8 +9,8 @@
 #include <HTTPClient.h>
 
 // WiFi credentials
-const char* ssid = "Balance";
-const char* password = "balance1234";
+const char* ssid = "I have no life";
+const char* password = "123456789";
 
 // Endpoint URL
 const char* serverUrl = "https://didier.requestcatcher.com/";

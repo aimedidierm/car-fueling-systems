@@ -15,6 +15,7 @@ class FuelFilling extends Model
         'price',
         'total',
         'type',
+        'fuel_code_id'
     ];
 
     public function client()

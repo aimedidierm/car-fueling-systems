@@ -2,99 +2,126 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BusLocation;
-use App\Models\Hardware;
-use App\Models\Payment;
-use App\Models\User;
-use Illuminate\Http\Request;
+use App\Enums\FuelFillingType;
+use App\Enums\TransactionStatus;
+use App\Http\Requests\HardwareRequest;
+use App\Models\Client;
+use App\Models\FuelCode;
+use App\Models\FuelFilling;
+use App\Models\FuelPrice;
+use App\Models\Transaction;
+use Paypack\Paypack;
+use Symfony\Component\HttpFoundation\Response;
 
 class HardwareController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Display the specified resource.
      */
-    public function show(Request $request)
+    public function show(HardwareRequest $request)
     {
-        // $request->validate([
-        //     "card" => "sometimes|string"
-        // ]);
+        if ($request->has('card')) {
+            $user = Client::where('card', $request->card)->first();
 
-        // if ($request->has('card')) {
-        //     $user = User::where('card', $request->card)->first();
-        //     if ($user) {
-        //         $payment = Payment::where('user_id', $user->id)->get();
-        //         if ($payment) {
-        //             $payedPayment = $payment->where('status', 'Payed');
-        //             if ($payedPayment->isNotEmpty()) {
-        //                 $onePayment = $payedPayment->first();
-        //                 $updatePayment = Payment::find($onePayment->id);
-        //                 $updatePayment->status = 'Used';
-        //                 $updatePayment->update();
-        //                 return response()->json([
-        //                     'card_allowed' => true,
-        //                     'message' => 'Itike yabonetse',
-        //                 ], 200);
-        //             }
-        //             $usedPayment = $payment->where('status', 'Used');
-        //             if ($usedPayment->isNotEmpty()) {
-        //                 $onePayment = $usedPayment->first();
-        //                 $updatePayment = Payment::find($onePayment->id);
-        //                 $updatePayment->status = 'Used';
-        //                 $updatePayment->update();
-        //                 return response()->json([
-        //                     'card_allowed' => true,
-        //                     'message' => 'Yakoreshejwe',
-        //                 ], 200);
-        //             } else {
-        //                 return response()->json([
-        //                     'card_allowed' => false,
-        //                     'message' => 'Ntiyishyuye',
-        //                 ], 200);
-        //             }
-        //         } else {
-        //             return response()->json([
-        //                 'card_allowed' => false,
-        //                 'message' => 'Ntiyakatishije',
-        //             ], 200);
-        //         }
-        //     } else {
-        //         return response()->json([
-        //             'card_allowed' => false,
-        //             'message' => 'Ikarita ntirimo',
-        //         ], 200);
-        //     }
-        // }
+            if ($user) {
+
+                $paypackInstance = $this->paypackConfig()->Cashin([
+                    "amount" => $request->amount,
+                    "phone" => $user->phone,
+                ]);
+
+                $transaction = Transaction::create([
+                    'client_id' => $user->id,
+                    'amount' => $request->amount,
+                    'status' => TransactionStatus::PENDING->value,
+                    'phone' => $user->phone,
+                    'ref' => $paypackInstance['ref'],
+                ]);
+
+                $fuel = FuelPrice::latest()->first();
+                $fuelVolume = $request->amount / $fuel->price;
+
+                $randomCode = rand(100000, 999999);
+
+                $fuelCode = FuelCode::create([
+                    'client_id' => $user->id,
+                    'liters' => $fuelVolume,
+                    'price' => $fuel->price,
+                    'total' => $request->amount,
+                    'type' => FuelFillingType::CARD->value,
+                    'code' => $randomCode,
+                    'transaction_id' => $transaction->id,
+                ]);
+
+                return response()->json([
+                    'status' => "1",
+                    'message' => 'Please Pay',
+                    'code' => $fuelCode->code,
+                ], Response::HTTP_OK);
+            } else {
+                return response()->json([
+                    'status' => "0",
+                    'message' => 'CardNotFound',
+                ], Response::HTTP_NOT_FOUND);
+            }
+        }
+
+        if ($request->has('code')) {
+            $fuelCode = FuelCode::where('code', $request->code)->first();
+
+            if ($fuelCode) {
+
+                if ($fuelCode->used) {
+                    return response()->json([
+                        'status' => "0",
+                        'message' => 'CodeUsed',
+                    ], Response::HTTP_NOT_FOUND);
+                }
+
+                $fuelFilling = FuelFilling::where('fuel_code_id', $fuelCode->id)->first();
+
+                if ($fuelFilling) {
+                    $fuelCode->used = true;
+                    $fuelCode->update();
+
+                    return response()->json([
+                        'status' => "2",
+                        'amount' => $fuelFilling->liters,
+                    ], Response::HTTP_OK);
+                } else {
+                    return response()->json([
+                        'status' => "0",
+                        'message' => 'FuelNotPayed',
+                    ], Response::HTTP_NOT_FOUND);
+                }
+            } else {
+                return response()->json([
+                    'status' => "0",
+                    'message' => 'CodeNotFound',
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            return response()->json([
+                'status' => "0",
+                'message' => 'CodeNotFound',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'status' => "0",
+            'message' => 'InvalidReq',
+        ], Response::HTTP_BAD_REQUEST);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Hardware $hardware)
+    public function paypackConfig()
     {
-        //
-    }
+        $paypack = new Paypack();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Hardware $hardware)
-    {
-        //
+        $paypack->config([
+            'client_id' => env('PAYPACK_CLIENT_ID'),
+            'client_secret' => env('PAYPACK_CLIENT_SECRET'),
+        ]);
+
+        return $paypack;
     }
 }
