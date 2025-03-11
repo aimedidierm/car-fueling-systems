@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class HardwareRequest extends FormRequest
+class QrCodeProcessRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,8 +23,7 @@ class HardwareRequest extends FormRequest
     {
         return [
             'card' => 'sometimes|string|required_unless:code,null',
-            'amount' => 'sometimes|numeric|required_unless:code,null|min:1',
-            'code' => 'sometimes|string|required_if:card,null',
+            'amount' => 'required|numeric:min:1',
         ];
     }
 }

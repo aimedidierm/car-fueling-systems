@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FuelFillingController;
 use App\Http\Controllers\FuelPriceController;
+use App\Http\Controllers\HardwareController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'auth.login')->name('login');
 ROute::post('/', [AuthController::class, 'login']);
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth');
+Route::get('/hardware/{card}', function ($card) {
+    return view('admin.qr-code-pay', ['card' => $card]);
+});
+Route::post('/hardware', [HardwareController::class, 'qrCodeProcess']);
 
 Route::group(["prefix" => "admin", "middleware" => ["auth", "adminCheck"], "as" => "admin."], function () {
     Route::get('/', [DashboardController::class, 'admin']);
@@ -34,4 +39,5 @@ Route::group(["prefix" => "admin", "middleware" => ["auth", "adminCheck"], "as" 
     Route::put('/users', [UserController::class, 'updateSingleUser']);
     Route::view('/settings', 'admin.settings');
     Route::put('/settings', [UserController::class, 'update']);
+    Route::post('/generate-qrcode', [HardwareController::class, 'generateQrCode']);
 });

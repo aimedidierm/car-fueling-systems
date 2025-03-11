@@ -9,8 +9,8 @@
 #include <HTTPClient.h>
 
 // WiFi credentials
-const char* ssid = "I have no life";
-const char* password = "123456789";
+const char* ssid = "Balance";
+const char* password = "balance1234";
 
 // Endpoint URL
 const char* serverUrl = "https://didier.requestcatcher.com/";
@@ -26,6 +26,7 @@ unsigned long oldTime;
 float totalDispensedmL = 0.0; // Total milliliters dispensed
 const float targetmL = 400.0; // Target volume in milliliters
 bool pumpRunning = false;     // Track if the pump is running
+String uid = "";
 
 // Keypad
 const byte ROWS = 4;
@@ -61,13 +62,13 @@ MFRC522 mfrc522{driver};
 
 // Function prototypes
 void IRAM_ATTR pulseCounter();
-void handleFlowSensor();
-void handleKeypad();
-void handleOLED();
-void handleRelay();
-void handleRFID();
-void handleLEDsAndBuzzer();
-void sendDataToServer(String data);
+// void handleFlowSensor();
+// void handleKeypad();
+// void handleOLED();
+// void handleRelay();
+// void handleRFID();
+// void handleLEDsAndBuzzer();
+// void sendDataToServer(String data);
 
 void setup() {
   Serial.begin(115200);
@@ -105,105 +106,71 @@ void setup() {
 }
 
 void loop() {
-  handleFlowSensor();
-  handleKeypad();
-  handleOLED();
-  handleRelay();
-  handleRFID();
-  handleLEDsAndBuzzer();
+  selectType();
+
+
+  // handleFlowSensor();
+  // handleKeypad();
+  // handleOLED();
+  // handleRelay();
+  // handleRFID();
+  // handleLEDsAndBuzzer();
 }
 
 void IRAM_ATTR pulseCounter() {
   pulseCount++;
 }
 
-void handleFlowSensor() {
-  if ((millis() - oldTime) > 1000) {
-    detachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN));
-    flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / calibrationFactor;
-    oldTime = millis();
-    pulseCount = 0;
-    attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
-
-    Serial.print("Flow rate: ");
-    Serial.print(flowRate, 2);
-    Serial.println(" L/min");
-
-    // Send flow rate data to server
-    sendDataToServer("Flow rate: " + String(flowRate, 2) + " L/min");
-  }
-}
-
-void handleKeypad() {
-  char key = keypad.getKey();
-  if (key) {
-    Serial.print("Key pressed: ");
-    Serial.println(key);
-    // Display key on OLED
-    display.clearDisplay();
-    display.setTextSize(2);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 0);
-    display.println("Key: " + String(key));
-    display.display();
-  }
-}
-
-void handleOLED() {
-  // Example of displaying static text
+void selectType() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.println("System Active");
+  display.println("Select option:");
+  display.println("");
+  display.setTextSize(2);
+  display.println("1. Card");
+  display.println("");
+  display.println("2. Code");
   display.display();
-}
 
-void handleRelay() {
-  // Calculate the volume dispensed since the last reading
-  float volumeDispensed = (flowRate / 60.0) * 1000.0; // Convert L/min to mL/s
-  totalDispensedmL += volumeDispensed;
-
-  // Ensure totalDispensedmL does not go below 0
-  if (totalDispensedmL < 0) {
-    totalDispensedmL = 0;
+  char key = keypad.getKey();
+  
+  if (key) {
+    if (key == '1') {
+      handleRFID();
+    } else if (key == '2') {
+      // Display "Code" selection on OLED
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(0, 0);
+      display.println("Code Selected");
+      display.display();
+    } else {
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(0, 0);
+      display.println("Invalid");
+      display.println("");
+      display.println("Option");
+      display.display();
+      delay(1000);
+      selectType();
+    }
   }
-
-  // Control the relay based on the total dispensed volume
-  if (totalDispensedmL >= targetmL) {
-    digitalWrite(RELAY_PIN, LOW); // Turn off the relay
-    pumpRunning = false;
-    Serial.println("Pump OFF - Target volume reached");
-  } else if (!pumpRunning) {
-    digitalWrite(RELAY_PIN, HIGH); // Turn on the relay
-    pumpRunning = true;
-    Serial.println("Pump ON - Dispensing...");
-  }
-
-  // Print the total dispensed volume
-  Serial.print("Total dispensed: ");
-  Serial.print(totalDispensedmL);
-  Serial.println(" mL");
-}
-
-void resetDispensedVolume() {
-  totalDispensedmL = 0.0; // Reset the total dispensed volume
-  pumpRunning = false;    // Ensure the pump is off
-  digitalWrite(RELAY_PIN, LOW); // Turn off the relay
-  Serial.println("Volume reset to 0 mL");
 }
 
 void handleRFID() {
   if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
     Serial.print("Card UID: ");
     for (byte i = 0; i < mfrc522.uid.size; i++) {
-      Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+      Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? "0" : "");
       Serial.print(mfrc522.uid.uidByte[i], HEX);
     }
     Serial.println();
 
-    // Send RFID data to server
-    String uid = "";
     for (byte i = 0; i < mfrc522.uid.size; i++) {
       uid += String(mfrc522.uid.uidByte[i], HEX);
     }
@@ -211,17 +178,111 @@ void handleRFID() {
   }
 }
 
-void handleLEDsAndBuzzer() {
-  // Example of controlling LEDs and buzzer
-  digitalWrite(GREEN_LED_PIN, HIGH);
-  digitalWrite(RED_LED_PIN, LOW);
-  digitalWrite(BUZZER_PIN, LOW);
-  delay(1000);
-  digitalWrite(GREEN_LED_PIN, LOW);
-  digitalWrite(RED_LED_PIN, HIGH);
-  digitalWrite(BUZZER_PIN, HIGH);
-  delay(1000);
-}
+// void handleFlowSensor() {
+//   if ((millis() - oldTime) > 1000) {
+//     detachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN));
+//     flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / calibrationFactor;
+//     oldTime = millis();
+//     pulseCount = 0;
+//     attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+
+//     Serial.print("Flow rate: ");
+//     Serial.print(flowRate, 2);
+//     Serial.println(" L/min");
+
+//     // Send flow rate data to server
+//     sendDataToServer("Flow rate: " + String(flowRate, 2) + " L/min");
+//   }
+// }
+
+// void handleKeypad() {
+//   char key = keypad.getKey();
+//   if (key) {
+//     Serial.print("Key pressed: ");
+//     Serial.println(key);
+//     // Display key on OLED
+//     display.clearDisplay();
+//     display.setTextSize(2);
+//     display.setTextColor(SSD1306_WHITE);
+//     display.setCursor(0, 0);
+//     display.println("Key: " + String(key));
+//     display.display();
+//   }
+// }
+
+// void handleOLED() {
+//   // Example of displaying static text
+//   display.clearDisplay();
+//   display.setTextSize(1);
+//   display.setTextColor(SSD1306_WHITE);
+//   display.setCursor(0, 0);
+//   display.println("System Active");
+//   display.display();
+// }
+
+// void handleRelay() {
+//   // Calculate the volume dispensed since the last reading
+//   float volumeDispensed = (flowRate / 60.0) * 1000.0; // Convert L/min to mL/s
+//   totalDispensedmL += volumeDispensed;
+
+//   // Ensure totalDispensedmL does not go below 0
+//   if (totalDispensedmL < 0) {
+//     totalDispensedmL = 0;
+//   }
+
+//   // Control the relay based on the total dispensed volume
+//   if (totalDispensedmL >= targetmL) {
+//     digitalWrite(RELAY_PIN, LOW); // Turn off the relay
+//     pumpRunning = false;
+//     Serial.println("Pump OFF - Target volume reached");
+//   } else if (!pumpRunning) {
+//     digitalWrite(RELAY_PIN, HIGH); // Turn on the relay
+//     pumpRunning = true;
+//     Serial.println("Pump ON - Dispensing...");
+//   }
+
+//   // Print the total dispensed volume
+//   Serial.print("Total dispensed: ");
+//   Serial.print(totalDispensedmL);
+//   Serial.println(" mL");
+// }
+
+// void resetDispensedVolume() {
+//   totalDispensedmL = 0.0; // Reset the total dispensed volume
+//   pumpRunning = false;    // Ensure the pump is off
+//   digitalWrite(RELAY_PIN, LOW); // Turn off the relay
+//   Serial.println("Volume reset to 0 mL");
+// }
+
+// void handleRFID() {
+//   if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+//     Serial.print("Card UID: ");
+//     for (byte i = 0; i < mfrc522.uid.size; i++) {
+//       Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+//       Serial.print(mfrc522.uid.uidByte[i], HEX);
+//     }
+//     Serial.println();
+
+//     // Send RFID data to server
+//     String uid = "";
+//     for (byte i = 0; i < mfrc522.uid.size; i++) {
+//       uid += String(mfrc522.uid.uidByte[i], HEX);
+//     }
+//     sendDataToServer("RFID UID: " + uid);
+//   }
+// }
+
+// void handleLEDsAndBuzzer() {
+//   // Example of controlling LEDs and buzzer
+//   digitalWrite(GREEN_LED_PIN, HIGH);
+//   digitalWrite(RED_LED_PIN, LOW);
+//   digitalWrite(BUZZER_PIN, LOW);
+//   delay(1000);
+//   digitalWrite(GREEN_LED_PIN, LOW);
+//   digitalWrite(RED_LED_PIN, HIGH);
+//   digitalWrite(BUZZER_PIN, HIGH);
+//   delay(1000);
+// }
 
 void sendDataToServer(String data) {
   if (WiFi.status() == WL_CONNECTED) {

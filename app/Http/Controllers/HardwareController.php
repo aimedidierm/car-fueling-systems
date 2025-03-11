@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\FuelFillingType;
 use App\Enums\TransactionStatus;
 use App\Http\Requests\HardwareRequest;
+use App\Http\Requests\QrCodeProcessRequest;
+use App\Http\Requests\QrCodeRequest;
 use App\Models\Client;
 use App\Models\FuelCode;
 use App\Models\FuelFilling;
 use App\Models\FuelPrice;
 use App\Models\Transaction;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Paypack\Paypack;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -123,5 +126,53 @@ class HardwareController extends Controller
         ]);
 
         return $paypack;
+    }
+
+    public function generateQrCode(QrCodeRequest $request)
+    {
+        $client = Client::where('phone', $request->phone)->first();
+        $url = env('APP_URL') . '/hardware/' . $client->card;
+        // return $url;
+        $qrCode = QrCode::size(300)->generate($url);
+
+        return view('admin.qrcode', compact('qrCode', 'client'));
+    }
+
+    public function qrCodeProcess(QrCodeProcessRequest $request)
+    {
+        $client = Client::where('card', $request->card)->first();
+        if ($client) {
+            $paypackInstance = $this->paypackConfig()->Cashin([
+                "amount" => $request->amount,
+                "phone" => $client->phone,
+            ]);
+
+            $transaction = Transaction::create([
+                'client_id' => $client->id,
+                'amount' => $request->amount,
+                'status' => TransactionStatus::PENDING->value,
+                'phone' => $client->phone,
+                'ref' => $paypackInstance['ref'],
+            ]);
+
+            $fuel = FuelPrice::latest()->first();
+            $fuelVolume = $request->amount / $fuel->price;
+
+            $randomCode = rand(100000, 999999);
+
+            $fuelCode = FuelCode::create([
+                'client_id' => $client->id,
+                'liters' => $fuelVolume,
+                'price' => $fuel->price,
+                'total' => $request->amount,
+                'type' => FuelFillingType::CARD->value,
+                'code' => $randomCode,
+                'transaction_id' => $transaction->id,
+            ]);
+
+            return back()->with('success', 'Please Pay');
+        } else {
+            return back()->withErrors('User not found');
+        }
     }
 }
