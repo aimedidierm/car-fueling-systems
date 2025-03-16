@@ -42,7 +42,7 @@ class HardwareController extends Controller
                 ]);
 
                 $fuel = FuelPrice::latest()->first();
-                $fuelVolume = $request->amount / $fuel->price;
+                $fuelVolume = ($request->amount / $fuel->price) * 1000;
 
                 $randomCode = rand(100000, 999999);
 
@@ -59,12 +59,12 @@ class HardwareController extends Controller
                 return response()->json([
                     'status' => "1",
                     'message' => 'Please Pay',
-                    'code' => $fuelCode->code,
+                    'code' => "$fuelCode->code",
                 ], Response::HTTP_OK);
             } else {
                 return response()->json([
                     'status' => "0",
-                    'message' => 'CardNotFound',
+                    'message' => 'Card Not Found',
                 ], Response::HTTP_NOT_FOUND);
             }
         }
@@ -77,7 +77,7 @@ class HardwareController extends Controller
                 if ($fuelCode->used) {
                     return response()->json([
                         'status' => "0",
-                        'message' => 'CodeUsed',
+                        'message' => 'Code Used',
                     ], Response::HTTP_NOT_FOUND);
                 }
 
@@ -94,19 +94,19 @@ class HardwareController extends Controller
                 } else {
                     return response()->json([
                         'status' => "0",
-                        'message' => 'FuelNotPayed',
+                        'message' => 'Fuel Not Payed',
                     ], Response::HTTP_NOT_FOUND);
                 }
             } else {
                 return response()->json([
                     'status' => "0",
-                    'message' => 'CodeNotFound',
+                    'message' => 'Code Not Found',
                 ], Response::HTTP_NOT_FOUND);
             }
 
             return response()->json([
                 'status' => "0",
-                'message' => 'CodeNotFound',
+                'message' => 'Code Not Found',
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -156,7 +156,7 @@ class HardwareController extends Controller
             ]);
 
             $fuel = FuelPrice::latest()->first();
-            $fuelVolume = $request->amount / $fuel->price;
+            $fuelVolume = ($request->amount / $fuel->price) * 1000;
 
             $randomCode = rand(100000, 999999);
 

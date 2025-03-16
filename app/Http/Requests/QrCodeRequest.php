@@ -23,7 +23,6 @@ class QrCodeRequest extends FormRequest
     {
         return [
             'phone' => 'required|string|exists:clients,phone',
-            'amount' => 'required|numeric:min:1',
         ];
     }
 }
