@@ -57,6 +57,37 @@
                 </div>
             </div>
         </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 rounded-lg shadow-md p-6 flex items-center justify-center">
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-gray-900 dark:text-white">Clients</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{$clients}}</p>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 rounded-lg shadow-md p-6 flex items-center justify-center">
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-gray-900 dark:text-white">Transactions</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{$transactions}}</p>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 rounded-lg shadow-md p-6 flex items-center justify-center">
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-gray-900 dark:text-white">Fuel Fillings</p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{$fillings}}</p>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-gray-800 border border-gray-200 rounded-lg shadow-md p-6 flex items-center justify-center">
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-gray-900 dark:text-white">Prices </p>
+                    <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{$prices->price}} Rwf</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @stop
