@@ -14,7 +14,7 @@ const char* ssid = "Balance";
 const char* password = "balance1234";
 
 // Endpoint URL
-const char* serverUrl = "https://eb0a-197-157-187-129.ngrok-free.app/api/status";
+const char* serverUrl = "https://arb.plantymart.xyz/api/status";
 
 // Flow sensor
 #define FLOW_SENSOR_PIN 34
