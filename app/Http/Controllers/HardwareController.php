@@ -160,7 +160,7 @@ class HardwareController extends Controller
 
             $randomCode = rand(100000, 999999);
 
-            $fuelCode = FuelCode::create([
+            FuelCode::create([
                 'client_id' => $client->id,
                 'liters' => $fuelVolume,
                 'price' => $fuel->price,
@@ -170,7 +170,7 @@ class HardwareController extends Controller
                 'transaction_id' => $transaction->id,
             ]);
 
-            return back()->with('success', 'Please Pay');
+            return back()->with('success', 'Code is: ' . $randomCode);
         } else {
             return back()->withErrors('User not found');
         }

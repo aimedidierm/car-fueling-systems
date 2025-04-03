@@ -4,9 +4,9 @@
 <div style="padding: 16px; margin-left: 16px;">
     <div
         style="padding: 16px; border: 2px dashed #e5e7eb; border-radius: 8px; border-color: #e5e7eb; background-color: #f9fafb;">
+        <x-message-component />
         <div style="display: flex; justify-content: space-between;">
 
-            <x-message-component />
 
             <div style="position: relative; width: 100%; max-width: 640px; max-height: 100%;">
                 <div
